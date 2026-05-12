@@ -1,0 +1,9 @@
+{
+  "name": "@guardrails/core",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "../../dist/core/index.cjs",
+  "module": "../../dist/core/index.js",
+  "types": "../../dist/core/index.d.ts"
+}
