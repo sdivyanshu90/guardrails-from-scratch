@@ -1,0 +1,100 @@
+version: "1.0"
+
+thresholds:
+  warn: 0.3
+  block: 0.55
+
+input_guards:
+  - id: pii-detector
+    enabled: true
+    weight: 1.0
+    options:
+      redaction_strategy: hash
+      entities:
+        - EMAIL_ADDRESS
+        - PHONE_NUMBER
+        - CREDIT_CARD
+        - SSN
+        - IP_ADDRESS
+        - DATE_OF_BIRTH
+        - PERSON_NAME
+        - STREET_ADDRESS
+
+  - id: injection-scanner
+    enabled: true
+    weight: 1.0
+    options:
+      check_base64: true
+      check_unicode_normalization: true
+
+  - id: topic-classifier
+    enabled: true
+    weight: 1.0
+    options:
+      always_block:
+        - WEAPONS_MASS_DESTRUCTION
+        - CSAM
+        - SELF_HARM_INSTRUCTIONS
+      configurable_deny:
+        - FINANCIAL_ADVICE
+        - LEGAL_ADVICE
+        - COMPETITOR_MENTIONS
+        - OFF_TOPIC
+      configurable_allow:
+        - CODING
+        - GENERAL_QA
+        - CREATIVE_WRITING
+      semantic_enabled: true
+      semantic_threshold: 0.7
+
+  - id: token-budget
+    enabled: true
+    weight: 0.5
+    options:
+      max_input_tokens: 3072
+      max_output_tokens: 1536
+      conversation_budget: 16384
+
+output_guards:
+  - id: hallucination-detector
+    enabled: true
+    weight: 0.7
+    options:
+      verify_entities: true
+      verify_timeout_ms: 1200
+
+  - id: toxicity-filter
+    enabled: true
+    weight: 1.0
+    options:
+      provider: local
+      categories:
+        - HATE_SPEECH
+        - HARASSMENT
+        - PROFANITY
+        - SELF_HARM
+      threshold: 0.35
+
+  - id: pii-rechecker
+    enabled: true
+    weight: 1.0
+
+  - id: schema-validator
+    enabled: true
+    weight: 0.5
+    options:
+      max_length_chars: 6000
+      min_length_chars: 20
+      language_match: true
+      format_rules:
+        mode: plain-text
+
+audit:
+  enabled: true
+  level: verbose
+  destination: file
+  file_path: ./logs/audit.jsonl
+
+fail_mode: closed
+input_mode: sequential
+output_mode: parallel
