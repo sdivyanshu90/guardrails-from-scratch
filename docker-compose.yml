@@ -1,0 +1,20 @@
+services:
+  guardrails:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      GUARDRAILS_CONFIG: ./config/rules.default.yaml
+      LOG_LEVEL: info
+    volumes:
+      - ./logs:/app/logs
+      - ./config:/app/config
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
